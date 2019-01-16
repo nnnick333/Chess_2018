@@ -2,29 +2,48 @@ import copy as Copy
 #Game controls values beyond the game and within the game(modes, checkmate, winners, etc.)
 class Game():
     def __init__(self):
+        #game mode
         self.mode = 0
+        #game board
         self.board = [[None,None,None,None,None,None,None,None]for n in range(8)]
+        #Current player move
         self.player = 2
+        #Stores the current player move when upgrading
         self.stored = 0
+        #Highlighted piece
         self.highlight = None
+        #calc value of 1 cause the game to run the calc_mvoes function once
         self.calc = 1
-        self.check = 0
+        #Whether or not its in check, checkmate or stalemate
         self.status = None
+        #counts the total number of moves for en passant specifically
         self.total_moves = 0
+        #Whether or not the game is allowing for an upgrade
         self.upgrade = None
+        #Checks which side is in check, if 0 then neither
         self.var_check = 0
+        #checks which side is in checkmate, if 0 then neither
         self.var_checkmate = 0
-        self.current_time = 0
+        #String that stores the winner text, example: "Black Wins!"
         self.winner_string = None
+        #The name the player enters
         self.name = ''
+        #Whether or not the user has finished typing in their name, to submit
         self.entered = False
+        #Stores history of all the players
         self.players = []
+        #Stores history of all scores
         self.player_high = []
+        #List of alpha coordinates
+        self.alpha_coord = ["a","b","c","d","e","f","g","h"]
+        #List of numerical coordinates
+        self.num_coord = [1,2,3,4,5,6,7,8]
     #Method used to calculate the possible moves of each piece across the board
     def calc_moves(self,board):
         for m in range(len(board)):
             for n in board[m]:
                 if n != None:
+                    #Calculates moves based on type which then calls specific method to choose moves
                     n.moves = []
                     n.in_path = []
                     if n.type == "pawn":
@@ -75,6 +94,7 @@ class Game():
                 if x != None and x.side == side and len(x.moves) != 0:
                     removeable_list = []
                     for (dx,dy) in x.moves:
+                        #Store original move as true(x,y)
                         truex = x.x
                         truey = x.y
                         true_destination = tboard[dy][dx]
@@ -149,7 +169,6 @@ class Game():
         self.stored = 0
         self.highlight = None
         self.calc = 1
-        self.check = 0
         self.status = None
         self.total_moves = 0
         self.upgrade = None
@@ -203,11 +222,14 @@ class all():
             return False
         
 class pawn(all):
+    #Pawn has special attribute("special_chance")
     def __init__(self,x,y,side,type):
         all.__init__(self,x,y,side,type)
+        #En passant is -1 if there is no chance, if there is chance it will be the same value as total_moves
         self.special_chance = -1
     #PAWN RECURSIVE MOVEMENT PATH & EN PASSANT
     def pawn(self,board):
+        #calculates all possible moves
         if self.side == 1:
             self.pawn_move(self.x,self.y,0,1,0,board)
             self.pawn_move(self.x,self.y,1,1,0,board)
@@ -414,65 +436,81 @@ def display_status():
             text("Black Wins",350,650)
 #DISPLAYS WHO'S MOVE IT IS    
 def display_player_move():
-    fill(0)
     textAlign(LEFT)
     textSize(20)
     if game.player == 1:
-        text("Black Turn",13,50)
+        fill(0)
+        rect(5,5,125,33)
+        fill(255)
+        text("Black Turn",15,30)
     if game.player == 2:
-        text("White Turn",13,50)
+        fill(255)
+        rect(5,5,125,33)
+        fill(0)
+        text("White Turn",15,30)
+def display_coordinate():
+    fill(0)
+    textSize(30)
+    textLeading(50)
+    for n in range(8):
+        text(game.alpha_coord[n],125+64*n,90)
+    for n in range(8):
+        text(game.num_coord[n],73,142+64*n)
 
 #DISPLAYS HIGHLIGHTED SQUARE AS WELL AS POSSIBLE MOVES
 def display_moves():
-    for m in range(len(game.board)):
-        for n in game.board[m]:
+    #Loops through draws non-selected pieces
+    for m in game.board:
+        for n in m:
             if n != None:
-                if (n.x,n.y) == game.highlight:
-                    n.hl = True
-                elif (n.x,n.y) != game.highlight:
+                if (n.x,n.y) != game.highlight:
                     n.hl = False
-                if n.hl == True:
-                    fill(100,149,237,180)
-                    rect(100 + n.x * 64, (64 * n.y) + 100, 64, 64)
-                    for (dx,dy) in n.moves:
-                        rect(100 + dx * 64, (64 * dy) + 100, 64, 64)
-                    fill(0)
                 if n.side == 1:
                     dy = 19
                 if n.side == 2:
                     dy = 160
-                if n.type == "pawn":
-                    if n.hl == False:
+                if n.hl == False:
+                    if n.type == "pawn":
                         copy(img,860,dy,80,95,101+64*n.x,101+64*n.y,50,55)
-                    else:
-                        #IF SELECTED IT HOVERS WITH MOUSE
-                        copy(img,860,dy,80,95,mouseX-30,mouseY-30,50,55)
-                if n.type == "bishop":
-                    if n.hl == False:
+                    if n.type == "bishop":
                         copy(img,520,dy,94,95,104+64*n.x,99+64*n.y,50,58)
-                    else:
-                        copy(img,520,dy,94,95,mouseX-30,mouseY-30,50,58)
-                if n.type == "rook":
-                    if n.hl == False:
+                    if n.type == "rook":
                         copy(img,367,dy,94,95,112+64*n.x,99+64*n.y,50,58)
-                    else:
-                        copy(img,367,dy,94,95,mouseX-30,mouseY-30,50,58)
-                if n.type == "knight":
-                    if n.hl == False:
+                    if n.type == "knight":
                         copy(img,690,dy,94,95,104+64*n.x,99+64*n.y,50,58)
-                    else:
-                        copy(img,690,dy,94,95,mouseX-30,mouseY-30,50,58)
-                if n.type == "queen":
-                    if n.hl == False:
+                    if n.type == "queen":
                         copy(img,188,dy,94,95,103+64*n.x,99+64*n.y,51,58)
-                    else:
-                        copy(img,188,dy,94,95,mouseX-30,mouseY-30,51,58)
-                if n.type == "king":
-                    if n.hl == False:
+                    if n.type == "king":
                         copy(img,25,dy,94,95,108+64*n.x,99+64*n.y,50,58)
-                    else:
+    #Loops through and draws selected pieces
+    for m in game.board:
+        for n in m:
+            if n != None:
+                if (n.x,n.y) == game.highlight:
+                    n.hl = True
+                if n.side == 1:
+                    dy = 19
+                if n.side == 2:
+                    dy = 160
+                if n.hl == True:
+                    fill(252,76,98,180)
+                    rect(100 + n.x * 64, (64 * n.y) + 100, 64, 64)
+                    fill(100,149,237,180)
+                    for (cx,cy) in n.moves:
+                        rect(100 + cx * 64, (64 * cy) + 100, 64, 64)
+                if n.hl == True:
+                    if n.type == "pawn":
+                        copy(img,860,dy,80,95,mouseX-30,mouseY-30,50,55)
+                    if n.type == "bishop":
+                        copy(img,520,dy,94,95,mouseX-30,mouseY-30,50,58)
+                    if n.type == "rook":
+                        copy(img,367,dy,94,95,mouseX-30,mouseY-30,50,58)
+                    if n.type == "knight":
+                        copy(img,690,dy,94,95,mouseX-30,mouseY-30,50,58)
+                    if n.type == "queen":
+                        copy(img,188,dy,94,95,mouseX-30,mouseY-30,51,58)
+                    if n.type == "king":
                         copy(img,25,dy,94,95,mouseX-26,mouseY-35,50,58)
-                    
 #IF A MOVE IS SELECTED
 def move_made(n,dx,dy):
     #n.moves set to 0 so player cannot double press a spot(thus settin the move twice)
@@ -582,6 +620,7 @@ def display_ingame():
     if game.upgrade != None:
         upgrade_display()
     display_grid(64,100,100)
+    display_coordinate()
     display_moves()
     if game.calc == 1:
         game.Move_Calculations()
@@ -592,7 +631,7 @@ def display_scores():
     textSize(35)
     text('Press Enter to Return to Menu',350,600)
     text('High Scores', 350, 50)
-    #DISPLAYS HIGHSCORES OF ALL TIME
+    #DISPLAYS HIGHEST SCORES OF ALL TIME
     textAlign(LEFT)
     textSize(30)
     text('NAME:',150,125)
